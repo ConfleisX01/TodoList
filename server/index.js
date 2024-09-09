@@ -1,40 +1,46 @@
-const express = require("express") // Creamos un objeto de express para inicializar un servidor
-const app = express() // asignamos los metodos a la variable de app
-const mysql = require("mysql") // Creamos un objeto de mysql para la llamada a la base de datos
+const express = require("express");
+const app = express();
+const mysql = require("mysql2");
+const cors = require("cors")
 
-// Creamos la conexion a la base de datos
+// Middleware para manejar datos JSON
+app.use(express.json());
+app.use(cors());
+
+
+// Crear la conexión a la base de datos
 const dataBase = mysql.createConnection({
-    host:"localhost",
-    user:"root",
-    password:"root",
-    database:"todo"
+    host: "localhost",
+    user: "root",
+    password: "root",
+    database: "todo"
 });
 
+// Rutas
 app.get('/list', (req, res) => {
     dataBase.query('SELECT * FROM lista', (err, result) => {
-        if (err) throw err
-        res.send(result)
-    })
-})
+        if (err) throw err;
+        res.send(result);
+    });
+});
 
 app.post('/update', (req, res) => {
-    const id = req.body.id
-    dataBase.query('UPDATE lista SET estatus = 1 WHERE id_tarea = ?', id, (err, result) => {
-        if (err) throw err
-        res.send("La tarea se actualizo con exito")
-    })
-})
+    const id = req.body.id;
+    dataBase.query('UPDATE lista SET estatus = 1 WHERE id_tarea = ?', [id], (err, result) => {
+        if (err) throw err;
+        res.send("La tarea se actualizó con éxito");
+    });
+});
 
 app.post('/create', (req, res) => {
-    const contexto = req.body.contexto
-
-    dataBase.query('INSERT INTO lista (contexto) VALUES ?', contexto, (err, result) => {
-        if (err) throw err
-        res.send("La tarea se creo con exito")
-    })
-})
+    const { nombre_tarea, contexto } = req.body;
+    dataBase.query('INSERT INTO lista (nombre_tarea, contexto) VALUES (?, ?)', [nombre_tarea, contexto], (err, result) => {
+        if (err) throw err;
+        res.send("La tarea se creó con éxito");
+    });
+});
 
 // Alojamos un servidor en el puerto 3001
 app.listen(3001, () => {
-    console.log("El servidor se alojo en el puerto http://localhost:3001")
-})
+    console.log("El servidor se alojó en el puerto http://localhost:3001");
+});
